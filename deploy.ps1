@@ -9,3 +9,10 @@ New-AzResourceGroupDeployment `
     -Name 'New-SVCPlan' `
     -ResourceGroupName $RGName `
     -TemplateFile '.\webapp_deployment.json'
+if($?){
+    Write-Output "The Web App has been created. Please wait for couple of mins before checking the URL."
+}
+else {
+    Write-Output "Some error occured. Please check logs for more details."
+}
+Start-Sleep -Seconds 60
