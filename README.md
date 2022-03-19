@@ -1,4 +1,5 @@
 This project can create resource group, app service plan, web app and a sample static web page will be displayed with the word “Automation for the People.
+
 Pre-Requisites to run the PowerShell Script:
 •	User must have the PowerShell AZ module installed and imported into the PowerShell console.
 •	Please login into the Azure portal when prompted for the credentials, also the credentials that are being used to login must have a d;efault subscription set in their profile.
