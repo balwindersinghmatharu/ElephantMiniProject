@@ -1,0 +1,129 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "svcPlanName": {
+            "type": "string",
+            "defaultValue": "SampleAppServicePlan",
+            "metadata": {
+                "description": "The name of the App Service plan."
+            }
+        },
+        "sku": {
+            "type": "string",
+            "defaultValue": "Free",
+            "allowedValues": [
+                "Standard",
+                "Premium",
+                "Free"
+            ],
+            "metadata": {
+                "description": "The pricing tier for the App Service plan."
+            }
+        },
+        "svcPlanSize": {
+            "defaultValue": "F1",
+            "type": "string",
+            "metadata": {
+                "description": "The instance size of the app."
+            }
+        },
+        "webappName": {
+            "type": "string",
+            "defaultValue": "[concat('webapp', uniqueString(resourceGroup().id))]",
+            "metadata": {
+                "description": "Name of azure web app"
+            }
+        },
+        "repoUrl": {
+            "type": "string",
+            "defaultValue": "https://github.com/balwindersinghmatharu/MyFirstwebappgithub.git",
+            "metadata": {
+                "description": "Github URL for the web app code"
+            }
+        },
+        "branch": {
+            "type": "string",
+            "defaultValue": "master",
+            "metadata": {
+                "description": "Branch name for the web app code"
+            }
+        }
+    },
+    "functions": [],
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2020-12-01",
+            "name": "[parameters('svcPlanName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('svcPlanSize')]",
+                "tier": "[parameters('sku')]",
+                "capacity": 1
+            },
+            "kind": "linux",
+            "properties": {}
+        },
+        {
+            "name": "[parameters('webappName')]",
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2020-12-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]": "Resource",
+                "displayName": "[parameters('webappName')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('svcPlanName'))]"
+            ],
+            "properties": {
+                "name": "[parameters('webappName')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('svcPlanName'))]"
+            },
+            "resources": [
+                {
+                    "type": "sourcecontrols",
+                    "name": "web",
+                    "apiVersion": "2020-12-01",
+                    "properties": {
+                        "RepoUrl": "[parameters('repoUrl')]",
+                        "branch": "[parameters('branch')]",
+                        "IsManualIntegration": false,
+                        "deploymentRollbackEnabled": false,
+                        "isMercurial": false,
+                        "isGitHubAction": true,
+                        "gitHubActionConfiguration": {
+                            "generateWorkflowFile": true,
+                            "workflowSettings": {
+                                "appType": "webapp",
+                                "publishType": "code",
+                                "os": "windows",
+                                "runtimeStack": "dotnet",
+                                "workflowApiVersion": "2020-12-01",
+                                "slotName": "production",
+                                "variables": {
+                                    "runtimeVersion": "6.0.x"
+                                }
+                            }
+                        }
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', parameters('webappName'))]"
+                    ]
+                }
+            ]
+        }
+    ],
+    "outputs": {
+        "webappNameDeployed": {
+        "type": "string",
+        "value": "[parameters('webappName')]"
+        },
+        "webappURL": {
+        "type": "string",
+        "value": "[reference(resourceId('Microsoft.Web/sites', parameters('webappName')), '2020-12-01').defaultHostName]"
+        }
+    }
+}
